@@ -227,6 +227,21 @@ def _session_visible_to_active_profile(session_profile, handler=None) -> bool:
     return _profiles_match(session_profile, active_profile)
 
 
+def _visible_session_for_file_ops(sid, handler):
+    """get_session_for_file_ops + active-profile boundary.
+
+    Workspace/file routes resolve a session by id then operate on its workspace
+    tree. They must enforce the same active-profile boundary as /api/sessions.
+    Raises KeyError when the session is not visible to the active profile so the
+    callers' existing ``except KeyError -> 404`` path returns a uniform 404
+    (mirroring the not-found response, never disclosing existence).
+    """
+    s = get_session_for_file_ops(sid)
+    if not _session_visible_to_active_profile(getattr(s, "profile", None), handler):
+        raise KeyError(sid)
+    return s
+
+
 def _active_skills_dir() -> Path:
     """Return the skills directory for the request's active Hermes profile.
 
@@ -9438,6 +9453,8 @@ def _handle_list_dir(handler, parsed):
         return bad(handler, "session_id is required")
     try:
         s = get_session(sid)
+        if not _session_visible_to_active_profile(getattr(s, "profile", None), handler):
+            return bad(handler, "Session not found", 404)
         workspace = s.workspace
     except KeyError:
         # Fallback for CLI sessions not loaded in WebUI memory
@@ -9448,6 +9465,8 @@ def _handle_list_dir(handler, parsed):
                     cli_meta = cs
                     break
             if not cli_meta:
+                return bad(handler, "Session not found", 404)
+            if not _session_visible_to_active_profile(cli_meta.get("profile") or None, handler):
                 return bad(handler, "Session not found", 404)
             workspace = cli_meta.get("workspace", "")
         except Exception:
@@ -10822,7 +10841,7 @@ def _handle_folder_download(handler, parsed):
     if not sid:
         return bad(handler, "session_id is required")
     try:
-        s = get_session_for_file_ops(sid)
+        s = _visible_session_for_file_ops(sid, handler)
     except KeyError:
         return bad(handler, "Session not found", 404)
 
@@ -10908,7 +10927,7 @@ def _handle_file_raw(handler, parsed):
     if not sid:
         return bad(handler, "session_id is required")
     try:
-        s = get_session_for_file_ops(sid)
+        s = _visible_session_for_file_ops(sid, handler)
     except KeyError:
         return bad(handler, "Session not found", 404)
     rel = qs.get("path", [""])[0]
@@ -10948,7 +10967,7 @@ def _handle_file_read(handler, parsed):
     if not sid:
         return bad(handler, "session_id is required")
     try:
-        s = get_session_for_file_ops(sid)
+        s = _visible_session_for_file_ops(sid, handler)
     except KeyError:
         return bad(handler, "Session not found", 404)
     rel = qs.get("path", [""])[0]
@@ -13324,10 +13343,14 @@ def _git_session(handler, session_id: str):
         bad(handler, "session_id required")
         return None
     try:
-        return get_session(session_id)
+        session = get_session(session_id)
     except KeyError:
         bad(handler, "Session not found", 404)
         return None
+    if not _session_visible_to_active_profile(getattr(session, "profile", None), handler):
+        bad(handler, "Session not found", 404)
+        return None
+    return session
 
 
 def _git_session_workspace(handler, session_id: str):
@@ -13619,7 +13642,9 @@ def _handle_git_commit_message(handler, body):
 
     try:
         require(body, "session_id")
-        session = get_session(body["session_id"])
+        session = _git_session(handler, body["session_id"])
+        if session is None:
+            return True
         workspace = Path(session.workspace)
 
         prompt = staged_commit_message_prompt(workspace)
@@ -13650,7 +13675,9 @@ def _handle_git_commit_message_selected(handler, body):
     try:
         require(body, "session_id")
         paths = _git_paths_from_body(body)
-        session = get_session(body["session_id"])
+        session = _git_session(handler, body["session_id"])
+        if session is None:
+            return True
         workspace = Path(session.workspace)
 
         prompt = selected_commit_message_prompt(workspace, paths)
@@ -13807,7 +13834,7 @@ def _handle_file_delete(handler, body):
     except ValueError as e:
         return bad(handler, str(e))
     try:
-        s = get_session_for_file_ops(body["session_id"])
+        s = _visible_session_for_file_ops(body["session_id"], handler)
     except KeyError:
         return bad(handler, "Session not found", 404)
     try:
@@ -13832,7 +13859,7 @@ def _handle_file_save(handler, body):
     except ValueError as e:
         return bad(handler, str(e))
     try:
-        s = get_session_for_file_ops(body["session_id"])
+        s = _visible_session_for_file_ops(body["session_id"], handler)
     except KeyError:
         return bad(handler, "Session not found", 404)
     try:
@@ -13859,7 +13886,7 @@ def _handle_file_create(handler, body):
     except ValueError as e:
         return bad(handler, str(e))
     try:
-        s = get_session_for_file_ops(body["session_id"])
+        s = _visible_session_for_file_ops(body["session_id"], handler)
     except KeyError:
         return bad(handler, "Session not found", 404)
     try:
@@ -13886,7 +13913,7 @@ def _handle_file_rename(handler, body):
     except ValueError as e:
         return bad(handler, str(e))
     try:
-        s = get_session_for_file_ops(body["session_id"])
+        s = _visible_session_for_file_ops(body["session_id"], handler)
     except KeyError:
         return bad(handler, "Session not found", 404)
     try:
@@ -13916,7 +13943,7 @@ def _handle_file_move(handler, body):
     except ValueError as e:
         return bad(handler, str(e))
     try:
-        s = get_session_for_file_ops(body["session_id"])
+        s = _visible_session_for_file_ops(body["session_id"], handler)
     except KeyError:
         return bad(handler, "Session not found", 404)
     try:
@@ -14011,7 +14038,7 @@ def _handle_create_dir(handler, body):
     except ValueError as e:
         return bad(handler, str(e))
     try:
-        s = get_session_for_file_ops(body["session_id"])
+        s = _visible_session_for_file_ops(body["session_id"], handler)
     except KeyError:
         return bad(handler, "Session not found", 404)
     try:
@@ -14033,7 +14060,7 @@ def _handle_file_reveal(handler, body):
     except ValueError as e:
         return bad(handler, str(e))
     try:
-        s = get_session_for_file_ops(body["session_id"])
+        s = _visible_session_for_file_ops(body["session_id"], handler)
     except KeyError:
         return bad(handler, "Session not found", 404)
     try:
@@ -14094,7 +14121,7 @@ def _handle_file_path(handler, body):
     except ValueError as e:
         return bad(handler, str(e))
     try:
-        s = get_session_for_file_ops(body["session_id"])
+        s = _visible_session_for_file_ops(body["session_id"], handler)
     except KeyError:
         return bad(handler, "Session not found", 404)
     try:
@@ -14124,7 +14151,7 @@ def _handle_file_open_vscode(handler, body):
     except ValueError as e:
         return bad(handler, str(e))
     try:
-        s = get_session_for_file_ops(body["session_id"])
+        s = _visible_session_for_file_ops(body["session_id"], handler)
     except KeyError:
         return bad(handler, "Session not found", 404)
     try:

@@ -198,6 +198,6 @@ def test_csv_preview_preserves_edit_flow():
     assert '_previewRawContent = content' in csv_render or '_previewRawContent=content' in csv_render, \
         "renderCsvPreviewContent must cache raw CSV content for the edit flow"
     # save path re-renders the CSV table for csv mode
-    save_section = src[src.find('async function toggleEditMode'):src.find('async function toggleEditMode') + 1200]
-    assert "renderCsvPreviewContent(_previewCurrentPath, content)" in save_section, \
+    save_section = src[src.find('async function toggleEditMode'):src.find('async function toggleEditMode') + 2200]
+    assert "renderCsvPreviewContent(_previewCurrentPath, savedContent)" in save_section, \
         "saving an edited CSV must re-render the table, not markdown"

@@ -245,3 +245,121 @@ class TestAgentRunsClientEnv:
         client = AgentRunsClient(base_url="http://127.0.0.1:8642", api_key="")
         headers = client._headers()
         assert "Authorization" not in headers
+
+
+class TestApprovalClarifyErrorMapping:
+    def test_respond_approval_maps_not_found(self):
+        client = MagicMock(spec=AgentRunsClient)
+        client.resolve_approval.return_value = {
+            "error": "not_found",
+            "message": "Approval apr-1 not found for run r1.",
+        }
+        adapter = AgentRunsAdapter.__new__(AgentRunsAdapter)
+        adapter._client = client
+        result = adapter.respond_approval("r1", "apr-1", "approve")
+        assert result.accepted is False
+        assert result.status == "not_found"
+
+    def test_respond_approval_maps_conflict(self):
+        client = MagicMock(spec=AgentRunsClient)
+        client.resolve_approval.return_value = {
+            "error": "conflict",
+            "message": "Approval apr-1 has already been resolved.",
+        }
+        adapter = AgentRunsAdapter.__new__(AgentRunsAdapter)
+        adapter._client = client
+        result = adapter.respond_approval("r1", "apr-1", "approve")
+        assert result.accepted is False
+        assert result.status == "conflict"
+
+    def test_respond_approval_maps_not_supported(self):
+        client = MagicMock(spec=AgentRunsClient)
+        client.resolve_approval.return_value = {
+            "error": "not_supported",
+            "message": "Not supported.",
+        }
+        adapter = AgentRunsAdapter.__new__(AgentRunsAdapter)
+        adapter._client = client
+        result = adapter.respond_approval("r1", "apr-1", "accept")
+        assert result.accepted is False
+        assert result.status == "not_supported"
+
+    def test_respond_approval_resolved_maps_cleanly(self):
+        client = MagicMock(spec=AgentRunsClient)
+        client.resolve_approval.return_value = {
+            "run_id": "r1",
+            "action_id": "apr-1",
+            "type": "approval",
+            "status": "resolved",
+            "event": {},
+        }
+        adapter = AgentRunsAdapter.__new__(AgentRunsAdapter)
+        adapter._client = client
+        result = adapter.respond_approval("r1", "apr-1", "approve")
+        assert result.accepted is True
+
+    def test_respond_clarify_maps_not_found(self):
+        client = MagicMock(spec=AgentRunsClient)
+        client.resolve_clarify.return_value = {
+            "error": "not_found",
+            "message": "Clarify clar-1 not found for run r1.",
+        }
+        adapter = AgentRunsAdapter.__new__(AgentRunsAdapter)
+        adapter._client = client
+        result = adapter.respond_clarify("r1", "clar-1", "yes")
+        assert result.accepted is False
+        assert result.status == "not_found"
+
+    def test_respond_clarify_maps_conflict(self):
+        client = MagicMock(spec=AgentRunsClient)
+        client.resolve_clarify.return_value = {
+            "error": "conflict",
+            "message": "Clarify clar-1 has already been resolved.",
+        }
+        adapter = AgentRunsAdapter.__new__(AgentRunsAdapter)
+        adapter._client = client
+        result = adapter.respond_clarify("r1", "clar-1", "yes")
+        assert result.accepted is False
+        assert result.status == "conflict"
+
+    def test_respond_clarify_maps_not_supported(self):
+        client = MagicMock(spec=AgentRunsClient)
+        client.resolve_clarify.return_value = {
+            "error": "not_supported",
+            "message": "Not supported.",
+        }
+        adapter = AgentRunsAdapter.__new__(AgentRunsAdapter)
+        adapter._client = client
+        result = adapter.respond_clarify("r1", "clar-1", "answer")
+        assert result.accepted is False
+        assert result.status == "not_supported"
+
+    def test_respond_clarify_resolved_maps_cleanly(self):
+        client = MagicMock(spec=AgentRunsClient)
+        client.resolve_clarify.return_value = {
+            "run_id": "r1",
+            "action_id": "clar-1",
+            "type": "clarify",
+            "status": "resolved",
+            "event": {},
+        }
+        adapter = AgentRunsAdapter.__new__(AgentRunsAdapter)
+        adapter._client = client
+        result = adapter.respond_clarify("r1", "clar-1", "yes")
+        assert result.accepted is True
+
+    def test_secrets_not_leaked_in_error_responses(self):
+        client = MagicMock(spec=AgentRunsClient)
+        client.resolve_approval.return_value = {
+            "error": "not_found",
+            "message": "Approval apr-1 not found for run r1.",
+        }
+        adapter = AgentRunsAdapter.__new__(AgentRunsAdapter)
+        adapter._client = client
+        result = adapter.respond_approval("r1", "apr-1", "approve")
+        msg = str(result.safe_message or "")
+        assert "api_key" not in msg.lower()
+        assert "token" not in msg.lower()
+        assert "secret" not in msg.lower()
+        assert "Bearer" not in msg
+        assert "Authorization" not in msg

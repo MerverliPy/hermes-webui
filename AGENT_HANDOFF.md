@@ -696,5 +696,46 @@ Result: All imports OK — PASS
 - `api/routes.py` — body run_id precedence fix
 
 ### Next task
-**Phase 11B — Harden approval/clarify live integration**
+**Phase 11C — True live AIAgent interruption and continuation, or PR submission if continuation remains out of scope.**
+
+---
+
+## Phase 11B — Approval/Clarify Proxy Integration (completed)
+
+### State Before Phase 11B
+- **Commit:** `620d002`
+- **Message:** `Phase 11A: PR review — fix body run_id precedence in control routes`
+
+### What Was Done
+Updated the agent-runs adapter and runtime routes to handle the new Agent approval/clarify response shapes:
+- `AgentRunsAdapter.respond_approval` / `respond_clarify` now map not_found/conflict/not_supported/resolved
+- `handle_run_approval` / `handle_run_clarify` use shared `_control_result_response` helper mapping status→HTTP codes
+- New `TestApprovalClarifyErrorMapping` test class (9 tests) covering all error states
+- Mobile pending actions already correctly proxy through the adapter
+
+### Changed Files
+- `api/runtime_adapters/agent_runs.py` — error mapping for not_found/conflict/not_supported
+- `api/runtime_routes.py` — `_control_result_response` helper, updated HTTP status mapping
+- `tests/test_agent_runs_error_mapping.py` — `TestApprovalClarifyErrorMapping` (9 tests)
+
+### Exact Tests
+```
+./scripts/test.sh tests/test_agent_runs_adapter.py \
+  tests/test_agent_runs_error_mapping.py \
+  tests/test_runtime_routes.py \
+  tests/test_mobile_pending_actions.py -v
+Result: 104 passed, 0 failed (4 files)
+```
+
+Agent-runs env: 96 passed, 8 failed (8 expected — test_runtime_routes.py tests for legacy-direct/journal mode)
+
+### Live Smoke Status
+Not performed as a full HTTP integration (requires live Agent server with injected pending actions). Adapter error mapping fully verified via unit tests. RunManager-level smoke performed in hermes-agent repo.
+
+### Remaining Risks
+1. True full-chain live smoke requires test-only pending action injection endpoints (not added — production safety)
+2. No secrets leaked in any error response path (verified)
+
+### Next task
+**Phase 11C — True live AIAgent interruption and continuation, or PR submission if continuation remains out of scope.**
 

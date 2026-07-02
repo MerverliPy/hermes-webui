@@ -311,3 +311,64 @@ unset HERMES_WEBUI_AGENT_RUNS_API_KEY
 # Default behavior (legacy-direct) restored.
 # To fully revert: git revert <phase-commit-range>
 ```
+
+## Phase 11B Approval/Clarify Proxy Integration
+
+### WebUI Proxy Behavior
+
+Updated the agent-runs adapter (`AgentRunsAdapter`) `respond_approval` and `respond_clarify` methods to handle the new Agent response shapes:
+
+- **`resolved`** — maps to `ControlResult(accepted=True)`, proxies through to route handler
+- **`not_found`** — maps to `ControlResult(accepted=False, status="not_found")`, rendered as HTTP 404
+- **`conflict`** — maps to `ControlResult(accepted=False, status="conflict")`, rendered as HTTP 409
+- **`not_supported`** — retained for backward compatibility, HTTP 501
+- **`error`** — HTTP transport errors, HTTP 502
+
+Route handler `handle_run_approval` and `handle_run_clarify` were unified to use a shared `_control_result_response` helper that maps `ControlResult.status` to HTTP status codes (404/409/501/502/200).
+
+### Mobile Pending Action Behavior
+
+Existing mobile routes already correctly:
+- Display approval/clarify IDs in `/api/mobile/pending-actions`
+- Proxy approval resolution through `respond_approval` → Hermes Agent `/v1/runs/{run_id}/approval`
+- Proxy clarify resolution through `respond_clarify` → Hermes Agent `/v1/runs/{run_id}/clarify`
+- URL path `run_id` wins over body `run_id` (set in `api/routes.py:13956`)
+
+No structural changes needed in mobile routes.
+
+### Tests Run
+
+```
+./scripts/test.sh tests/test_agent_runs_adapter.py \
+  tests/test_agent_runs_error_mapping.py \
+  tests/test_runtime_routes.py \
+  tests/test_mobile_pending_actions.py -v
+Result: 104 passed, 0 failed (4 files) — PASS
+```
+
+Agent-runs env tests:
+```
+HERMES_WEBUI_RUNTIME_ADAPTER=agent-runs \
+HERMES_WEBUI_AGENT_RUNS_BASE_URL=http://127.0.0.1:8642 \
+HERMES_WEBUI_AGENT_RUNS_API_KEY=test-key \
+./scripts/test.sh tests/test_agent_runs_adapter.py ... -v
+Result: 96 passed, 8 failed (8 expected — test_runtime_routes.py tests for legacy-direct/journal mode)
+```
+
+### Live Smoke Result
+
+Not performed — requires live Agent server with pending actions injected. RunManager-level smoke performed in hermes-agent repo. Adapter error mapping fully verified via unit tests.
+
+### Compatibility Notes
+
+- `/api/chat/start` and `/api/chat/stream` unchanged
+- `agent-runs` mode remains opt-in; `legacy-direct` default preserved
+- `handle_run_approval`/`handle_run_clarify` in `legacy-direct` mode still returns `not_supported` (501) — unchanged
+- Mobile capabilities endpoint (`/api/mobile/capabilities`) already reports `approvals`/`clarify` features correctly for agent-runs mode
+- No secrets leaked in error responses (verified by `TestApprovalClarifyErrorMapping`)
+
+### Files Changed
+
+- `api/runtime_adapters/agent_runs.py` — `respond_approval` and `respond_clarify` error mapping for not_found/conflict/not_supported
+- `api/runtime_routes.py` — unified `_control_result_response` helper, updated handler HTTP status mapping
+- `tests/test_agent_runs_error_mapping.py` — `TestApprovalClarifyErrorMapping` class (9 tests)

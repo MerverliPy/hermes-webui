@@ -390,11 +390,24 @@ class AgentRunsAdapter:
                 safe_message=exc.message,
                 payload=exc.to_dict(),
             )
-        if isinstance(resp.get("error"), str) and resp.get("error") == "not_supported":
+        error_kind = resp.get("error") if isinstance(resp, dict) else None
+        if error_kind == "not_supported":
             return ControlResult(
                 False,
                 status="not_supported",
                 safe_message=str(resp.get("message") or "Approval is not supported."),
+            )
+        if error_kind == "not_found":
+            return ControlResult(
+                False,
+                status="not_found",
+                safe_message=str(resp.get("message") or "Approval not found."),
+            )
+        if error_kind == "conflict":
+            return ControlResult(
+                False,
+                status="conflict",
+                safe_message=str(resp.get("message") or "Approval already resolved or run is terminal."),
             )
         return _active_control_result(resp)
 
@@ -408,11 +421,24 @@ class AgentRunsAdapter:
                 safe_message=exc.message,
                 payload=exc.to_dict(),
             )
-        if isinstance(resp.get("error"), str) and resp.get("error") == "not_supported":
+        error_kind = resp.get("error") if isinstance(resp, dict) else None
+        if error_kind == "not_supported":
             return ControlResult(
                 False,
                 status="not_supported",
                 safe_message=str(resp.get("message") or "Clarify is not supported."),
+            )
+        if error_kind == "not_found":
+            return ControlResult(
+                False,
+                status="not_found",
+                safe_message=str(resp.get("message") or "Clarify not found."),
+            )
+        if error_kind == "conflict":
+            return ControlResult(
+                False,
+                status="conflict",
+                safe_message=str(resp.get("message") or "Clarify already resolved or run is terminal."),
             )
         return _active_control_result(resp)
 

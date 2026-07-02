@@ -303,16 +303,7 @@ def handle_run_approval(handler, body):
         approval_id = str(body.get("approval_id") or "").strip()
         choice = str(body.get("choice") or "accept").strip()
         result = adapter.respond_approval(run_id, approval_id, choice)
-        return json_response(
-            handler,
-            {
-                "ok": result.accepted,
-                "status": result.status,
-                "message": result.safe_message,
-                "run_id": run_id,
-            },
-            status=200 if result.accepted else 501,
-        )
+        return _control_result_response(handler, result, "approval", run_id)
     return json_response(
         handler,
         {
@@ -339,16 +330,7 @@ def handle_run_clarify(handler, body):
         clarify_id = str(body.get("clarify_id") or "").strip()
         response = str(body.get("response") or body.get("answer") or "").strip()
         result = adapter.respond_clarify(run_id, clarify_id, response)
-        return json_response(
-            handler,
-            {
-                "ok": result.accepted,
-                "status": result.status,
-                "message": result.safe_message,
-                "run_id": run_id,
-            },
-            status=200 if result.accepted else 501,
-        )
+        return _control_result_response(handler, result, "clarify", run_id)
     return json_response(
         handler,
         {
@@ -357,3 +339,22 @@ def handle_run_clarify(handler, body):
         },
         501,
     )
+
+
+def _control_result_response(handler, result, action_type, run_id):
+    from api.helpers import j as json_response
+
+    status_map = {
+        "not_found": 404,
+        "conflict": 409,
+        "not_supported": 501,
+        "error": 502,
+    }
+    status_code = status_map.get(result.status, 200 if result.accepted else 502)
+    response = {
+        "ok": result.accepted,
+        "status": result.status,
+        "message": result.safe_message,
+        "run_id": run_id,
+    }
+    return json_response(handler, response, status=status_code)

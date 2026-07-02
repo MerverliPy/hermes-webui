@@ -412,8 +412,35 @@ Agent-runs env:
 - Agent-runs mode remains opt-in; `legacy-direct` default preserved
 - No WebUI code changes required for this phase
 
+### Phase 18 — Cross-Repo Live HTTP Smoke Harness (WebUI side)
+
+Phase 18 adds live HTTP smoke coverage for the WebUI agent-runs adapter.
+The smoke harness starts the Hermes Agent standalone runtime server and
+WebUI in agent-runs mode, then verifies the full proxy chain.
+
+**New files:**
+- `scripts/smoke_agent_runs_live.sh` — WebUI agent-runs live smoke script
+- `tests/test_agent_runs_live_http_smoke.py` — 8 pytest tests
+
+**Live smoke verified:**
+1. WebUI runtime capabilities → agent-runs mode
+2. WebUI proxied run status → terminal state
+3. WebUI proxied run events → done event present
+4. WebUI cancel → proxies correctly
+5. WebUI deployment health → agent-runs adapter
+
+**Tests Run:**
+```
+Default env: 146 passed, 0 failed (7 test files)
+Agent-runs env: 138 passed, 8 expected failures
+```
+
+**No architecture changes.** agent-runs remains opt-in.
+
 ### Files Updated
 
-- `AGENT_HANDOFF.md` — Phase 15 section added
-- `IMPLEMENTATION_REPORT.md` — Phase 15 section added
-- `PR_DESCRIPTION.md` — Phase 15 changes added
+- `scripts/smoke_agent_runs_live.sh` — new
+- `tests/test_agent_runs_live_http_smoke.py` — new
+- `AGENT_HANDOFF.md` — Phase 18 section added
+- `IMPLEMENTATION_REPORT.md` — Phase 18 section added
+- `PR_DESCRIPTION.md` — Phase 18 changes added

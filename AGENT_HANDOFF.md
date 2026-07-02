@@ -777,9 +777,31 @@ Existing tests already comprehensively cover the agent-runs adapter (6 test file
 **Default mode: 138 passed, 0 failed**
 **Agent-runs env: 130 passed, 8 expected failures**
 
+### Phase 18 — WebUI agent-runs live smoke coverage (completed)
+
+**New files:**
+- `scripts/smoke_agent_runs_live.sh` — live HTTP smoke for WebUI agent-runs adapter
+- `tests/test_agent_runs_live_http_smoke.py` — 8 pytest tests for smoke harness construction
+
+**Cross-repo smoke verified (via hermes-agent/scripts/smoke_cross_repo.sh):**
+1. WebUI runtime capabilities — GET /api/runtime/capabilities shows agent-runs mode
+2. WebUI proxied run status — GET /api/runs/{run_id} returns terminal state
+3. WebUI proxied run events — GET /api/runs/{run_id}/events contains done event
+4. WebUI cancel/stop — POST /api/runs/{run_id}/cancel proxies correctly
+5. WebUI deployment health — GET /api/deployment/health shows agent-runs adapter
+
+**No runtime architecture changes made.** agent-runs adapter remains opt-in via HERMES_WEBUI_RUNTIME_ADAPTER=agent-runs.
+
+### Test Results (Phase 18)
+
+**Default env: 146 passed, 0 failed** (7 test files)
+**Agent-runs env: 138 passed, 8 expected failures** (test_runtime_routes.py specific)
+
 ### Files Updated
 
-- `AGENT_HANDOFF.md` - Phase 15 section added
-- `IMPLEMENTATION_REPORT.md` - Phase 15 section added
-- `PR_DESCRIPTION.md` - Phase 15 changes added
+- `scripts/smoke_agent_runs_live.sh` — new
+- `tests/test_agent_runs_live_http_smoke.py` — new
+- `AGENT_HANDOFF.md` — Phase 18 section added
+- `IMPLEMENTATION_REPORT.md` — Phase 18 section added
+- `PR_DESCRIPTION.md` — Phase 18 changes added
 

@@ -104,6 +104,23 @@ Phase 15 verifies the WebUI side of cross-repo runtime integration. No code chan
 - 138 tests passed (default mode), 130 passed/8 expected failures (agent-runs mode)
 - 345 Agent runtime tests pass with the same contract
 
+### Phase 18 — WebUI agent-runs live smoke coverage
+
+**New files:**
+- `scripts/smoke_agent_runs_live.sh` — live HTTP smoke script for WebUI agent-runs
+- `tests/test_agent_runs_live_http_smoke.py` — 8 tests for smoke harness construction
+
+**Live smoke verified (cross-repo):**
+1. Runtime capabilities → agent-runs mode
+2. Proxied run status → terminal state
+3. Proxied run events → done event
+4. Cancel/stop → proxies correctly
+5. Deployment health → agent-runs adapter
+
+**Tests:** 146 passed (default), 138 passed/8 expected failures (agent-runs env)
+
+**No architecture changes.** agent-runs remains opt-in.
+
 ## Rollback Plan
 
 ```bash

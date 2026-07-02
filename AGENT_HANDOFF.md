@@ -546,3 +546,89 @@ Deferred — requires full live server config. Automated tests provide comprehen
 
 **Ready for PR review and optional Hermes Agent server route mounting.**
 
+---
+
+## Phase 10B — WebUI live agent-runs smoke (completed)
+
+### State Before Phase 10B
+- **Commit:** `ade8fd1`
+- **Message:** `Document WebUI runtime hardening verification`
+
+### Live Server Startup
+
+WebUI started with agent-runs adapter pointed at live Hermes Agent runtime API:
+
+```bash
+cd hermes-webui
+HERMES_WEBUI_RUNTIME_ADAPTER=agent-runs \
+HERMES_WEBUI_AGENT_RUNS_BASE_URL=http://127.0.0.1:8642 \
+HERMES_WEBUI_AGENT_RUNS_API_KEY=test-key \
+HERMES_WEBUI_PORT=8789 \
+HERMES_WEBUI_PASSWORD=test-password \
+./ctl.sh start
+# Bound: 127.0.0.1:8789
+# Note: Port 8787 was occupied by unrelated process; port 8789 used for smoke
+```
+
+Agent server was a standalone Python server (full `hermes gateway run` not viable due to messaging adapter dependencies):
+
+```bash
+cd hermes-agent && uv run python /tmp/hermes-agent-standalone.py
+# 127.0.0.1:8642, HERMES_USE_RUNTIME_RUNS=1
+# register_runtime_routes(app) delegates to RunManager
+```
+
+### WebUI Live Smoke Results
+
+All smoke tests ran against http://127.0.0.1:8789 with cookie-based auth (password: test-password).
+
+| Test | Endpoint | Result |
+|---|---|---|
+| Runtime capabilities | GET /api/runtime/capabilities | runtime_adapter="agent-runs", resumable_events=true, last_event_id=true, cancel/approval/clarify supported |
+| Mobile capabilities | GET /api/mobile/capabilities | deployment_health=true, workspace_search=true, resumable_runs=true |
+| Deployment health | GET /api/deployment/health | runtime_adapter="agent-runs", agent_runtime_reachable=false (standalone server lacks /v1/health; adapter works correctly) |
+| Run status proxy | GET /api/runs/{run_id} | Correctly proxies to live Agent via agent-runs adapter |
+| Run events proxy | GET /api/runs/{run_id}/events | Returns events matching Agent RuntimeEvent contract |
+| Cancel proxy | POST /api/runs/{run_id}/cancel | 200, status "cancelled", clean response, no traceback |
+| Workspace search | GET /api/workspace/search | 200, no errors, no secret leakage |
+
+### Agent-Runs Adapter Verification
+
+The agent-runs adapter (`api/runtime_adapters/agent_runs.py`) successfully:
+- Proxied run status from Agent /v1/runs/{run_id}
+- Proxied run events from Agent /v1/runs/{run_id}/events
+- Proxied cancel to Agent /v1/runs/{run_id}/stop
+- Reported capabilities correctly (resumable_events, last_event_id, all controls)
+- Preserved secret redaction across all responses
+
+### Post-Smoke Test Results (WebUI, agent-runs env)
+
+```
+HERMES_WEBUI_RUNTIME_ADAPTER=agent-runs \
+HERMES_WEBUI_AGENT_RUNS_BASE_URL=http://127.0.0.1:8642 \
+HERMES_WEBUI_AGENT_RUNS_API_KEY=test-key \
+./scripts/test.sh tests/test_agent_runs_adapter.py \
+  tests/test_runtime_adapter_selection.py \
+  tests/test_agent_runs_error_mapping.py \
+  tests/test_runtime_routes.py \
+  tests/test_mobile_capabilities.py \
+  tests/test_deployment_health.py \
+  tests/test_workspace_search.py -v
+
+Result: 149 passed, 8 failed in 5.98s
+  8 failures in test_runtime_routes.py — expected (tests use journal mocks designed
+  for legacy-direct/journal mode; documented in Phase 5 handoff)
+```
+
+### Issues Found
+
+1. **`agent_runtime_reachable: false`** — Standalone server exposes `/health` but deployment health checks `/v1/health`. The full gateway API server provides `/v1/health`. No functional impact on the adapter.
+
+2. **Port 8787 occupied** — Unrelated `command-center` process. Smoke used port 8789.
+
+3. **WebUI requires auth** — All endpoints require cookie-based authentication. Smoke tests included login step.
+
+### Next task
+
+**PR review / optional Hermex iOS client validation**
+

@@ -192,18 +192,53 @@ Automated test suite provides comprehensive coverage of all endpoints.
 - `/api/chat/start` preserved — response shape unchanged
 - `/api/chat/stream` preserved — not modified
 - agent-runs not default — `HERMES_WEBUI_RUNTIME_ADAPTER` must be explicitly set
-- live Hermes Agent HTTP smoke deferred — Agent server mount is deferred
+- live Hermes Agent HTTP smoke deferred — Agent server mount is deferred — RESOLVED: Phase 10B verified
 - Default behavior remains backward-compatible
 
-## Known Limitations
+## Phase 10B — Live Agent-Runs Smoke (completed)
 
-- Hermes Agent Phase 4 route module exists but server mount is deferred
+### Configuration Used
+
+| Env Var | Value |
+|---|---|
+| HERMES_WEBUI_RUNTIME_ADAPTER | agent-runs |
+| HERMES_WEBUI_AGENT_RUNS_BASE_URL | http://127.0.0.1:8642 |
+| HERMES_WEBUI_AGENT_RUNS_API_KEY | test-key |
+| HERMES_WEBUI_PORT | 8789 |
+| HERMES_WEBUI_PASSWORD | test-password |
+
+Agent server: standalone Python server on 127.0.0.1:8642 with `register_runtime_routes(app)` mounted via `HERMES_USE_RUNTIME_RUNS=1`.
+
+### Live Smoke Results
+
+| Test | Endpoint | Result |
+|---|---|---|
+| Runtime capabilities | GET /api/runtime/capabilities | agent-runs mode, all supports flags correct |
+| Mobile capabilities | GET /api/mobile/capabilities | All feature flags correct |
+| Deployment health | GET /api/deployment/health | runtime_adapter="agent-runs" |
+| Run status proxy | GET /api/runs/{run_id} | Live Agent call successful |
+| Run events proxy | GET /api/runs/{run_id}/events | Event contract matches |
+| Cancel proxy | POST /api/runs/{run_id}/cancel | Status "cancelled", clean |
+| Workspace search | GET /api/workspace/search | 200, no errors |
+
+### Agent-Runs Adapter Functioning
+
+The `AgentRunsAdapter` (Phase 5) successfully communicated with the live Hermes Agent runtime API:
+- Run status, events, and cancel all proxied through correctly
+- Runtime contract shapes (RuntimeStatus, RuntimeEvent) matched
+- No secret leakage in any response
+- No tracebacks or unreachable errors in adapter calls
+
+### Known Limitations
+
+- Hermes Agent route module mounted in Phase 10A, live-smoke verified in Phase 10B
 - Hermex iOS source was unavailable during Phase 6; server-side contract implemented
-- agent-runs live integration requires Agent HTTP route mounting
+- agent-runs live integration verified in Phase 10B (standalone server; full gateway startup blocked by messaging adapters)
 - approval/clarify resolution depends on Agent-side support (returns `not_supported` currently)
 - true live interruption depends on Agent execution integration
 - No WebUI frontend UI added for workspace search or deployment health (endpoints + tests sufficient)
-- Server smoke test deferred (requires full live server config)
+- Standalone server lacks `/v1/health` (deployment health reports `agent_runtime_reachable: false`; adapter works correctly)
+- `hermes gateway run` full startup blocked by messaging adapter dependencies in smoke environment
 
 ## Rollback
 

@@ -136,4 +136,68 @@ python3 -c 'from api.runtime_journal import RuntimeJournal; print("OK")'
 
 ### Next task
 
-**Phase 3: WebUI runtime routes + legacy-journal mirror**
+**Phase 3: WebUI runtime routes + legacy-journal mirror** — COMPLETE (see below)
+
+---
+
+## Phase 3: WebUI runtime routes + legacy-journal mirror — COMPLETE
+
+| Field | Value |
+|---|---|
+| **Status** | Complete |
+| **HEAD before commit** | `c8f4e01` |
+| **Changed files** | `api/runtime_routes.py` (created), `api/routes.py` (modified), `api/streaming.py` (modified), `api/runtime_journal.py` (modified), `tests/test_runtime_routes.py` (created), `tests/test_runtime_sse_reconnect.py` (created), `tests/test_runtime_legacy_journal_mirror.py` (created), `docs/rfcs/runtime-api-contract.md` (updated) |
+
+### Verification
+
+```bash
+# Legacy-journal mode — all 78 pass
+HERMES_WEBUI_RUNTIME_ADAPTER=legacy-journal ./scripts/test.sh \
+  tests/test_runtime_contract.py \
+  tests/test_runtime_journal.py \
+  tests/test_runtime_routes.py \
+  tests/test_runtime_sse_reconnect.py \
+  tests/test_runtime_legacy_journal_mirror.py \
+  -v
+
+# Default/legacy-direct mode — all 31 pass
+./scripts/test.sh \
+  tests/test_runtime_routes.py \
+  tests/test_runtime_legacy_journal_mirror.py \
+  -v
+```
+
+### Deliverables
+
+- `api/runtime_routes.py` — Route handlers for 7 new endpoints: capabilities, active-run, run status, run events (JSON + SSE), cancel, approval, clarify. Delegates to `api/runtime_journal.py` and `api/runtime_adapter.py`.
+- `api/routes.py` — Added dispatching for GET and POST runtime routes using `parsed.path.startswith("/api/runs/")` and `parsed.path.endswith("/active-run")` patterns.
+- `api/streaming.py` — Added `_mirror_to_runtime_journal()` helper with SSE-to-contract event mapping. Hooks into `_run_agent_streaming` to create journal run at start and mirror events via `put()`. Gated behind `HERMES_WEBUI_RUNTIME_ADAPTER=legacy-journal`.
+- `api/runtime_journal.py` — `create_run()` now accepts optional `run_id` parameter for explicit stream-based ID assignment.
+- `tests/test_runtime_routes.py` — 23 tests covering capabilities, active-run, run status, events (JSON + SSE), cancel/approval/clarify not_supported, default mode compatibility, module imports.
+- `tests/test_runtime_sse_reconnect.py` — 5 tests for SSE replay, after_seq resume, limit, terminal cleanup, event_id stability.
+- `tests/test_runtime_legacy_journal_mirror.py` — 12 tests covering mirror activation gating, SSE-to-contract mapping (run.started, token.delta, tool progress/started, done, error), disk durability, default mode non-requirement.
+
+### Event mapping (SSE → Contract)
+
+| SSE Event | Contract Type |
+|---|---|
+| `token`, `interim_assistant` | `token.delta` |
+| `reasoning` | `reasoning.delta` |
+| `tool` (with `event_type=tool.started`) | `tool.started` |
+| `tool` (without `event_type`) | `progress` |
+| `tool_complete` | `tool.done` |
+| `done` | `done` (terminal) |
+| `apperror`, `error` | `error` (terminal) |
+| `cancel` | `done` (terminal) |
+| `approval` | `approval.requested` |
+| `clarify` | `clarify.requested` |
+| `metering` | `usage.updated` |
+| others | `run.status` or `progress` |
+
+### /api/chat/start compatibility
+
+Not modified. Response shape unchanged. Default behavior remains backward-compatible. Journal mirroring activates only when `HERMES_WEBUI_RUNTIME_ADAPTER=legacy-journal`.
+
+### Next task
+
+**Phase 4: Hermes Agent /v1/runs runtime API foundation**

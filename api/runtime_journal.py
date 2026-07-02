@@ -175,9 +175,10 @@ class RuntimeJournal:
         self,
         session_id: str,
         metadata: dict | None = None,
+        run_id: str | None = None,
     ) -> RuntimeStatus:
         sid = _validate_id(session_id, "session_id")
-        run_id = _make_run_id()
+        run_id = _validate_id(run_id, "run_id") if run_id else _make_run_id()
         _ = metadata
         status = make_status(
             run_id=run_id,

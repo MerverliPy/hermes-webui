@@ -177,8 +177,43 @@ module. The recommended mobile usage pattern is:
   shape internally).
 - `api/runtime_contract.py` — canonical Python implementation of this contract.
 - `api/runtime_journal.py` — ``RuntimeJournal`` class with durable append-only run event storage, active-session index, and replay support.
+- `api/runtime_routes.py` — dispatched route handlers for capabilities, active-run, run status, event replay (JSON + SSE), cancel, approval, and clarify endpoints.
 
-## Journal storage layout
+## Route reference
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/api/runtime/capabilities` | Return adapter mode and supported features. |
+| `GET` | `/api/sessions/{session_id}/active-run` | Return active (non-terminal) run for session. |
+| `GET` | `/api/runs/{run_id}` | Return run status from journal. |
+| `GET` | `/api/runs/{run_id}/events` | Replay events (JSON or SSE). Query params: `after_seq`, `limit`. |
+| `POST` | `/api/runs/{run_id}/cancel` | Cancel an active run (legacy-journal mode). |
+| `POST` | `/api/runs/{run_id}/approval` | Respond to approval request (not_supported in legacy-journal). |
+| `POST` | `/api/runs/{run_id}/clarify` | Respond to clarify request (not_supported in legacy-journal). |
+
+## Legacy journal mirroring
+
+When ``HERMES_WEBUI_RUNTIME_ADAPTER=legacy-journal``, the streaming engine
+mirrors SSE events into the runtime journal. The following SSE event types are
+mapped to contract event types:
+
+| SSE | Contract |
+|---|---|
+| ``token``, ``interim_assistant`` | ``token.delta`` |
+| ``reasoning`` | ``reasoning.delta`` |
+| ``tool`` (with ``event_type=tool.started``) | ``tool.started`` |
+| ``tool`` (generic) | ``progress`` |
+| ``tool_complete`` | ``tool.done`` |
+| ``done`` | ``done`` (terminal) |
+| ``apperror``, ``error`` | ``error`` (terminal) |
+| ``cancel`` | ``done`` (terminal) |
+| ``approval`` | ``approval.requested`` |
+| ``clarify`` | ``clarify.requested`` |
+| ``metering`` | ``usage.updated`` |
+| others | ``run.status`` or ``progress`` |
+
+Events are written via ``RuntimeEvent.to_dict()`` which redacts secret-bearing
+keys before hitting disk.
 
 The ``RuntimeJournal`` stores events and run metadata under ``STATE_DIR / "runs" /``:
 

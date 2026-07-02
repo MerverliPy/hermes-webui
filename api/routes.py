@@ -8796,6 +8796,15 @@ from api.run_journal import (
     read_run_events,
     stale_interrupted_event,
 )
+from api.runtime_routes import (
+    handle_runtime_capabilities,
+    handle_active_run,
+    handle_run_status,
+    handle_run_events,
+    handle_run_cancel,
+    handle_run_approval,
+    handle_run_clarify,
+)
 from api.todo_state import attach_todo_state
 from api.providers import get_providers, get_provider_quota, get_provider_cost_history, set_provider_key, remove_provider_key
 from api.onboarding import (
@@ -12285,6 +12294,21 @@ def handle_get(handler, parsed) -> bool:
             cancelled = cancel_stream(stream_id)
         return j(handler, {"ok": True, "cancelled": cancelled, "stream_id": stream_id})
 
+    # ── Runtime routes ──────────────────────────────────────────────────────
+    if parsed.path == "/api/runtime/capabilities":
+        return handle_runtime_capabilities(handler, parsed)
+
+    if parsed.path.endswith("/active-run") and parsed.path.startswith("/api/sessions/"):
+        return handle_active_run(handler, parsed)
+
+    if parsed.path.endswith("/events") and parsed.path.startswith("/api/runs/"):
+        return handle_run_events(handler, parsed)
+
+    if parsed.path.startswith("/api/runs/") and not parsed.path.endswith("/events"):
+        return handle_run_status(handler, parsed)
+
+    # ── End runtime routes ──────────────────────────────────────────────────
+
     if parsed.path == "/api/chat/stream":
         return _handle_sse_stream(handler, parsed)
 
@@ -13889,6 +13913,21 @@ def handle_post(handler, parsed) -> bool:
 
     if parsed.path == "/api/chat/start":
         return _handle_chat_start(handler, body, diag=diag)
+
+    # ── Runtime control routes ─────────────────────────────────────────────
+    if parsed.path.startswith("/api/runs/"):
+        run_path = parsed.path[len("/api/runs/"):]
+        if run_path.endswith("/cancel"):
+            body.setdefault("run_id", run_path[:-len("/cancel")])
+            return handle_run_cancel(handler, body)
+        if run_path.endswith("/approval"):
+            body.setdefault("run_id", run_path[:-len("/approval")])
+            return handle_run_approval(handler, body)
+        if run_path.endswith("/clarify"):
+            body.setdefault("run_id", run_path[:-len("/clarify")])
+            return handle_run_clarify(handler, body)
+
+    # ── End runtime control routes ─────────────────────────────────────────
 
     if parsed.path == "/api/chat":
         return _handle_chat_sync(handler, body)

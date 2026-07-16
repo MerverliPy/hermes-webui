@@ -732,7 +732,7 @@ _AUTH_TOKEN: str | None = None
 _AUTH_TOKEN_ALLOWED_ROUTES: frozenset = frozenset({
     '/api/system/health',
     '/api/health/agent',
-    '/api/auth/status',
+    '/api/models',
 })
 
 

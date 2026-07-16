@@ -727,6 +727,14 @@ def _safe_login_inner_next(query: str | None) -> str:
 
 _AUTH_TOKEN: str | None = None
 
+# Exact GET routes the upstream token may access. Everything else returns 403.
+# Extend this list as SSE, model, and chat routes pass verification.
+_AUTH_TOKEN_ALLOWED_ROUTES: frozenset = frozenset({
+    '/api/system/health',
+    '/api/health/agent',
+    '/api/auth/status',
+})
+
 
 def _resolve_auth_token() -> str | None:
     """Resolve AUTH_TOKEN from environment variable."""
@@ -742,28 +750,40 @@ def _reset_auth_token_for_test():
 
 
 def verify_bearer_token(handler) -> bool:
-    """Check Authorization: Bearer <token> or X-Auth-Token header against AUTH_TOKEN."""
-    token = _resolve_auth_token()
-    if not token:
+    """Constant-time check of Authorization: Bearer *** against AUTH_TOKEN."""
+    expected = _resolve_auth_token()
+    if not expected:
         return False
-    # Check Authorization: Bearer <token>
     auth_header = handler.headers.get('Authorization', '')
-    if auth_header.startswith('Bearer '):
-        if auth_header[len('Bearer '):] == token:
-            return True
-    # Check X-Auth-Token header
-    alt_token = handler.headers.get('X-Auth-Token', '')
-    if alt_token == token:
-        return True
+    if not auth_header.startswith('Bearer '):
+        return False
+    provided = auth_header[len('Bearer '):]
+    # Constant-time comparison to prevent timing side-channel
+    return hmac.compare_digest(provided, expected)
+
+
+def _reject_token(handler, status: int, message: str) -> bool:
+    body = b'{"error":"' + message.encode() + b'"}'
+    handler.send_response(status)
+    handler.send_header('Content-Type', 'application/json')
+    handler.send_header('Content-Length', str(len(body)))
+    handler.end_headers()
+    handler.wfile.write(body)
     return False
 
 
 def check_auth(handler, parsed) -> bool:
     """Check if request is authorized. Returns True if OK.
     If not authorized, sends 401 (API) or 302 redirect (page) and returns False."""
-    # AUTH_TOKEN bypass: if set, allow authenticated API calls without session
-    if _resolve_auth_token() and verify_bearer_token(handler):
-        return True
+    # AUTH_TOKEN gate: Bearer token is the only auth supported outside the
+    # browser session. Even with a valid token, only exact GET routes in
+    # _AUTH_TOKEN_ALLOWED_ROUTES pass; everything else gets 403.
+    upstream_token = _resolve_auth_token()
+    if upstream_token:
+        if verify_bearer_token(handler):
+            if handler.command == 'GET' and parsed.path in _AUTH_TOKEN_ALLOWED_ROUTES:
+                return True
+            return _reject_token(handler, 403, 'Forbidden')
     if not is_auth_enabled():
         return True
     # Public paths don't require auth

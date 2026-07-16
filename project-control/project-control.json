@@ -1,0 +1,102 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-16T21:00:23.406673Z",
+  "project": {
+    "repository": "MerverliPy/hermes-webui",
+    "siteSlug": "hermes-agent-web-ui",
+    "siteProjectId": "appgprj_6a57ca3238c081919fcc5634802b2800",
+    "trackedVersion": 22,
+    "visualDirection": "graphite-and-cyan",
+    "requirements": [
+      "Preserve responsive desktop and mobile layouts.",
+      "Preserve the six-destination mobile bottom navigation."
+    ]
+  },
+  "statusRows": [
+    {
+      "id": "repository",
+      "label": "Repository",
+      "value": "MerverliPy/hermes-webui",
+      "status": "recorded",
+      "evidence": []
+    },
+    {
+      "id": "sourceRevision",
+      "label": "Source revision",
+      "value": "5c867989e1d2472244153bf1bcfc84f98448114a",
+      "status": "verified",
+      "evidence": [
+        {
+          "source": "git",
+          "detail": "git rev-parse HEAD"
+        }
+      ]
+    },
+    {
+      "id": "branch",
+      "label": "Branch",
+      "value": "feat/automatic-project-control-brief",
+      "status": "verified",
+      "evidence": [
+        {
+          "source": "git",
+          "detail": "git branch --show-current"
+        }
+      ]
+    },
+    {
+      "id": "projectVersion",
+      "label": "Tracked project version",
+      "value": "Version 22",
+      "status": "recorded",
+      "evidence": []
+    },
+    {
+      "id": "siteProject",
+      "label": "Site project",
+      "value": "appgprj_6a57ca3238c081919fcc5634802b2800",
+      "status": "recorded",
+      "evidence": []
+    },
+    {
+      "id": "siteCheckpoint",
+      "label": "Authoritative Site checkpoint",
+      "value": null,
+      "status": "unresolved",
+      "evidence": []
+    },
+    {
+      "id": "siteDeployment",
+      "label": "Authoritative Site deployment",
+      "value": null,
+      "status": "unresolved",
+      "evidence": []
+    },
+    {
+      "id": "controlStudio",
+      "label": "Website Control Studio",
+      "value": "401 tunnel_active_organization_required; reauthentication_required",
+      "status": "failed",
+      "evidence": []
+    },
+    {
+      "id": "screenshot",
+      "label": "Screenshot comparison",
+      "value": "Mismatch unresolved",
+      "status": "unresolved",
+      "evidence": []
+    },
+    {
+      "id": "cancellationRecovery",
+      "label": "Cancellation recovery",
+      "value": "Hermes live response could not complete; the current conversation is preserved",
+      "status": "failed",
+      "evidence": []
+    }
+  ],
+  "simulationBoundary": {
+    "protected": true,
+    "status": "simulated",
+    "statement": "Do not claim that agents, tasks, missions, models, telemetry, approvals, settings, artifacts, tools, or persistence are connected to a real Hermes backend unless independently verified."
+  }
+}

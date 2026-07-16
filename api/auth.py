@@ -730,9 +730,13 @@ _AUTH_TOKEN: str | None = None
 # Exact GET routes the upstream token may access. Everything else returns 403.
 # Extend this list as SSE, model, and chat routes pass verification.
 _AUTH_TOKEN_ALLOWED_ROUTES: frozenset = frozenset({
-    '/api/system/health',
-    '/api/health/agent',
-    '/api/models',
+    ('GET', '/api/system/health'),
+    ('GET', '/api/health/agent'),
+    ('GET', '/api/models'),
+    ('POST', '/api/session/new'),
+    ('POST', '/api/chat/start'),
+    ('GET', '/api/chat/stream'),
+    ('GET', '/api/chat/cancel'),
 })
 
 
@@ -781,7 +785,7 @@ def check_auth(handler, parsed) -> bool:
     upstream_token = _resolve_auth_token()
     if upstream_token:
         if verify_bearer_token(handler):
-            if handler.command == 'GET' and parsed.path in _AUTH_TOKEN_ALLOWED_ROUTES:
+            if (handler.command, parsed.path) in _AUTH_TOKEN_ALLOWED_ROUTES:
                 return True
             return _reject_token(handler, 403, 'Forbidden')
     if not is_auth_enabled():

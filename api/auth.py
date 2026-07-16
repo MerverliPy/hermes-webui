@@ -725,9 +725,45 @@ def _safe_login_inner_next(query: str | None) -> str:
     return path
 
 
+_AUTH_TOKEN: str | None = None
+
+
+def _resolve_auth_token() -> str | None:
+    """Resolve AUTH_TOKEN from environment variable."""
+    global _AUTH_TOKEN
+    if _AUTH_TOKEN is None:
+        _AUTH_TOKEN = os.getenv('HERMES_WEBUI_AUTH_TOKEN', '').strip() or None
+    return _AUTH_TOKEN
+
+
+def _reset_auth_token_for_test():
+    global _AUTH_TOKEN
+    _AUTH_TOKEN = None
+
+
+def verify_bearer_token(handler) -> bool:
+    """Check Authorization: Bearer <token> or X-Auth-Token header against AUTH_TOKEN."""
+    token = _resolve_auth_token()
+    if not token:
+        return False
+    # Check Authorization: Bearer <token>
+    auth_header = handler.headers.get('Authorization', '')
+    if auth_header.startswith('Bearer '):
+        if auth_header[len('Bearer '):] == token:
+            return True
+    # Check X-Auth-Token header
+    alt_token = handler.headers.get('X-Auth-Token', '')
+    if alt_token == token:
+        return True
+    return False
+
+
 def check_auth(handler, parsed) -> bool:
     """Check if request is authorized. Returns True if OK.
     If not authorized, sends 401 (API) or 302 redirect (page) and returns False."""
+    # AUTH_TOKEN bypass: if set, allow authenticated API calls without session
+    if _resolve_auth_token() and verify_bearer_token(handler):
+        return True
     if not is_auth_enabled():
         return True
     # Public paths don't require auth

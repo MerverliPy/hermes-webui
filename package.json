@@ -4,7 +4,12 @@
   "private": true,
   "description": "Dev-only tooling for hermes-webui. NOT a build step — the app remains pure Python + vanilla JS with no bundler. The only dependency is ESLint, used solely as a runtime-error guard over static/*.js (catches brick-class bugs like #3162 const-reassignment that node --check and source-presence tests miss). See TESTING.md > 'Static JS runtime lint'.",
   "scripts": {
-    "lint:runtime": "eslint --no-config-lookup -c eslint.runtime-guard.config.mjs \"static/**/*.js\""
+    "lint:runtime": "eslint --no-config-lookup -c eslint.runtime-guard.config.mjs \"static/**/*.js\"",
+    "control:collect": "python3 scripts/project_control.py collect",
+    "control:render": "python3 scripts/project_control.py render",
+    "control:update": "python3 scripts/project_control.py update",
+    "control:verify": "python3 scripts/project_control.py verify",
+    "control:test": "./scripts/test.sh tests/test_project_control.py"
   },
   "devDependencies": {
     "eslint": "^10.4.0"

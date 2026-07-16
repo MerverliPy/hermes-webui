@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/MerverliPy/hermes-webui/project-control/project-control.schema.json",
+  "title": "Hermes project control state",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "generatedAt", "project", "statusRows", "simulationBoundary"],
+  "properties": {
+    "schemaVersion": {"const": 1},
+    "generatedAt": {"type": ["string", "null"], "format": "date-time"},
+    "project": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository", "siteSlug", "siteProjectId", "trackedVersion", "visualDirection", "requirements"],
+      "properties": {
+        "repository": {"const": "MerverliPy/hermes-webui"},
+        "siteSlug": {"const": "hermes-agent-web-ui"},
+        "siteProjectId": {"const": "appgprj_6a57ca3238c081919fcc5634802b2800"},
+        "trackedVersion": {"const": 22},
+        "visualDirection": {"const": "graphite-and-cyan"},
+        "requirements": {
+          "type": "array",
+          "minItems": 2,
+          "items": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "statusRows": {
+      "type": "array",
+      "minItems": 10,
+      "maxItems": 10,
+      "items": {"$ref": "#/$defs/statusRow"}
+    },
+    "simulationBoundary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["protected", "status", "statement"],
+      "properties": {
+        "protected": {"const": true},
+        "status": {"const": "simulated"},
+        "statement": {
+          "const": "Do not claim that agents, tasks, missions, models, telemetry, approvals, settings, artifacts, tools, or persistence are connected to a real Hermes backend unless independently verified."
+        }
+      }
+    }
+  },
+  "$defs": {
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source", "detail"],
+      "properties": {
+        "source": {"type": "string", "minLength": 1},
+        "detail": {"type": "string", "minLength": 1}
+      }
+    },
+    "statusRow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "label", "value", "status", "evidence"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[a-z][A-Za-z0-9]*$"},
+        "label": {"type": "string", "minLength": 1},
+        "value": {"type": ["string", "null"]},
+        "status": {"enum": ["recorded", "verified", "unresolved", "simulated", "failed"]},
+        "evidence": {"type": "array", "items": {"$ref": "#/$defs/evidence"}}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"status": {"const": "verified"}}, "required": ["status"]},
+          "then": {
+            "properties": {
+              "value": {"type": "string", "minLength": 1},
+              "evidence": {"minItems": 1}
+            }
+          }
+        }
+      ]
+    }
+  }
+}

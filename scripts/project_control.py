@@ -26,6 +26,20 @@ BOUNDARY_STATEMENT = (
     "settings, artifacts, tools, or persistence are connected to a real Hermes "
     "backend unless independently verified."
 )
+AUTHORITATIVE_PROJECT = {
+    "repository": "MerverliPy/hermes-webui",
+    "siteSlug": "hermes-agent-web-ui",
+    "siteProjectId": "appgprj_6a57ca3238c081919fcc5634802b2800",
+    "trackedVersion": 25,
+    "siteRevisionKey": "hermes-site-version-25-905ac4e9d18b",
+    "adapterPhase": "host-synchronized",
+    "lastSynchronizedAt": "2026-07-16T21:23:19.524Z",
+    "visualDirection": "graphite-and-cyan",
+}
+PROVENANCE_LABELS = {
+    "sourceRevision": "Generation source revision",
+    "branch": "Generation branch",
+}
 
 
 class ControlError(RuntimeError):
@@ -49,14 +63,7 @@ def validate_state(state: dict[str, Any]) -> None:
     project = state.get("project")
     if not isinstance(project, dict):
         raise ControlError("project must be an object")
-    expected_project = {
-        "repository": "MerverliPy/hermes-webui",
-        "siteSlug": "hermes-agent-web-ui",
-        "siteProjectId": "appgprj_6a57ca3238c081919fcc5634802b2800",
-        "trackedVersion": 22,
-        "visualDirection": "graphite-and-cyan",
-    }
-    for key, expected in expected_project.items():
+    for key, expected in AUTHORITATIVE_PROJECT.items():
         if project.get(key) != expected:
             raise ControlError(f"project.{key} must remain {expected!r}")
 
@@ -71,6 +78,9 @@ def validate_state(state: dict[str, Any]) -> None:
         if not isinstance(row_id, str) or not row_id or row_id in ids:
             raise ControlError("status row IDs must be unique non-empty strings")
         ids.add(row_id)
+        expected_label = PROVENANCE_LABELS.get(row_id)
+        if expected_label is not None and row.get("label") != expected_label:
+            raise ControlError(f"{row_id} label must remain {expected_label!r}")
         status = row.get("status")
         evidence = row.get("evidence")
         if status not in ALLOWED_STATUSES:

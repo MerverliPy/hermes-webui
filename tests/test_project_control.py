@@ -34,8 +34,35 @@ def test_schema_declares_draft_2020_12():
     assert schema["$schema"] == "https://json-schema.org/draft/2020-12/schema"
 
 
+def test_authoritative_version_25_receipt_is_pinned(state):
+    assert state["project"]["trackedVersion"] == 25
+    assert state["project"]["siteRevisionKey"] == "hermes-site-version-25-905ac4e9d18b"
+    assert state["project"]["adapterPhase"] == "host-synchronized"
+    assert state["project"]["lastSynchronizedAt"] == "2026-07-16T21:23:19.524Z"
+
+
+@pytest.mark.parametrize("historical_version", [22, 24])
+def test_historical_versions_are_rejected(state, historical_version):
+    changed = copy.deepcopy(state)
+    changed["project"]["trackedVersion"] = historical_version
+    with pytest.raises(project_control.ControlError, match="trackedVersion"):
+        project_control.validate_state(changed)
+
+
 def test_exactly_ten_status_rows(state):
     assert len(state["statusRows"]) == 10
+
+
+def test_generation_provenance_labels_are_pinned(state):
+    rows = {row["id"]: row for row in state["statusRows"]}
+    assert rows["sourceRevision"]["label"] == "Generation source revision"
+    assert rows["branch"]["label"] == "Generation branch"
+
+    changed = copy.deepcopy(state)
+    changed_rows = {row["id"]: row for row in changed["statusRows"]}
+    changed_rows["sourceRevision"]["label"] = "Source revision"
+    with pytest.raises(project_control.ControlError, match="sourceRevision label"):
+        project_control.validate_state(changed)
 
 
 def test_verified_status_requires_evidence(state):

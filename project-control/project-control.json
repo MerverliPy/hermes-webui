@@ -1,11 +1,14 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-16T21:00:23.406673Z",
+  "generatedAt": "2026-07-17T01:40:10.805990Z",
   "project": {
     "repository": "MerverliPy/hermes-webui",
     "siteSlug": "hermes-agent-web-ui",
     "siteProjectId": "appgprj_6a57ca3238c081919fcc5634802b2800",
-    "trackedVersion": 22,
+    "trackedVersion": 25,
+    "siteRevisionKey": "hermes-site-version-25-905ac4e9d18b",
+    "adapterPhase": "host-synchronized",
+    "lastSynchronizedAt": "2026-07-16T21:23:19.524Z",
     "visualDirection": "graphite-and-cyan",
     "requirements": [
       "Preserve responsive desktop and mobile layouts.",
@@ -22,8 +25,8 @@
     },
     {
       "id": "sourceRevision",
-      "label": "Source revision",
-      "value": "5c867989e1d2472244153bf1bcfc84f98448114a",
+      "label": "Generation source revision",
+      "value": "84682b4a1f7b56084174724de62f0897eaf532bb",
       "status": "verified",
       "evidence": [
         {
@@ -34,8 +37,8 @@
     },
     {
       "id": "branch",
-      "label": "Branch",
-      "value": "feat/automatic-project-control-brief",
+      "label": "Generation branch",
+      "value": "fix/project-control-version-24",
       "status": "verified",
       "evidence": [
         {
@@ -47,16 +50,26 @@
     {
       "id": "projectVersion",
       "label": "Tracked project version",
-      "value": "Version 22",
-      "status": "recorded",
-      "evidence": []
+      "value": "Version 25",
+      "status": "verified",
+      "evidence": [
+        {
+          "source": "ChatGPT Sites host receipt",
+          "detail": "revision 25; revision key hermes-site-version-25-905ac4e9d18b"
+        }
+      ]
     },
     {
       "id": "siteProject",
       "label": "Site project",
       "value": "appgprj_6a57ca3238c081919fcc5634802b2800",
-      "status": "recorded",
-      "evidence": []
+      "status": "verified",
+      "evidence": [
+        {
+          "source": "ChatGPT Sites host receipt",
+          "detail": "Hermes Agent Web UI; synchronized 2026-07-16T21:23:19.524Z"
+        }
+      ]
     },
     {
       "id": "siteCheckpoint",
@@ -74,17 +87,27 @@
     },
     {
       "id": "controlStudio",
-      "label": "Website Control Studio",
-      "value": "401 tunnel_active_organization_required; reauthentication_required",
-      "status": "failed",
-      "evidence": []
+      "label": "Website Control Studio host adapter",
+      "value": "host-synchronized; no direct Sites API or credentials; production publishing unavailable",
+      "status": "verified",
+      "evidence": [
+        {
+          "source": "host adapter",
+          "detail": "site identity and revision receipt synchronized at 2026-07-16T21:23:19.524Z"
+        }
+      ]
     },
     {
       "id": "screenshot",
       "label": "Screenshot comparison",
-      "value": "Mismatch unresolved",
+      "value": "Version 23 production screenshot failed; current reconciliation unresolved",
       "status": "unresolved",
-      "evidence": []
+      "evidence": [
+        {
+          "source": "Version 24 handoff",
+          "detail": "failed Version 23 screenshot preserved; exact failure details unresolved"
+        }
+      ]
     },
     {
       "id": "cancellationRecovery",

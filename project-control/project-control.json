@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-16T21:00:23.406673Z",
+  "generatedAt": "2026-07-17T00:18:29.563098Z",
   "project": {
     "repository": "MerverliPy/hermes-webui",
     "siteSlug": "hermes-agent-web-ui",
@@ -23,7 +23,7 @@
     {
       "id": "sourceRevision",
       "label": "Source revision",
-      "value": "5c867989e1d2472244153bf1bcfc84f98448114a",
+      "value": "b07bd6dddcb9b00362fe9adf0b7b82957f4a560d",
       "status": "verified",
       "evidence": [
         {
@@ -35,7 +35,7 @@
     {
       "id": "branch",
       "label": "Branch",
-      "value": "feat/automatic-project-control-brief",
+      "value": "fix/project-control-version-24",
       "status": "verified",
       "evidence": [
         {

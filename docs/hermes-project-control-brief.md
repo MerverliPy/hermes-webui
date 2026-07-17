@@ -16,13 +16,13 @@ and protected boundaries outside the marked region remain human-maintained.
 ## Current control status
 
 <!-- BEGIN GENERATED PROJECT CONTROL STATUS -->
-Generated: `2026-07-16T21:00:23.406673Z`
+Generated: `2026-07-17T00:18:29.563098Z`
 
 | Control | Value | Status | Evidence |
 |---|---|---|---|
 | Repository | `MerverliPy/hermes-webui` | recorded | — |
-| Source revision | `5c867989e1d2472244153bf1bcfc84f98448114a` | verified | git: git rev-parse HEAD |
-| Branch | `feat/automatic-project-control-brief` | verified | git: git branch --show-current |
+| Source revision | `b07bd6dddcb9b00362fe9adf0b7b82957f4a560d` | verified | git: git rev-parse HEAD |
+| Branch | `fix/project-control-version-24` | verified | git: git branch --show-current |
 | Tracked project version | `Version 22` | recorded | — |
 | Site project | `appgprj_6a57ca3238c081919fcc5634802b2800` | recorded | — |
 | Authoritative Site checkpoint | `Unresolved` | unresolved | — |

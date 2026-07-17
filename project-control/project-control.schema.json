@@ -11,12 +11,15 @@
     "project": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["repository", "siteSlug", "siteProjectId", "trackedVersion", "visualDirection", "requirements"],
+      "required": ["repository", "siteSlug", "siteProjectId", "trackedVersion", "siteRevisionKey", "adapterPhase", "lastSynchronizedAt", "visualDirection", "requirements"],
       "properties": {
         "repository": {"const": "MerverliPy/hermes-webui"},
         "siteSlug": {"const": "hermes-agent-web-ui"},
         "siteProjectId": {"const": "appgprj_6a57ca3238c081919fcc5634802b2800"},
-        "trackedVersion": {"const": 22},
+        "trackedVersion": {"const": 24},
+        "siteRevisionKey": {"const": "hermes-site-version-24-27b62e0a21a1"},
+        "adapterPhase": {"const": "host-synchronized"},
+        "lastSynchronizedAt": {"const": "2026-07-16T21:23:19.524Z", "format": "date-time"},
         "visualDirection": {"const": "graphite-and-cyan"},
         "requirements": {
           "type": "array",

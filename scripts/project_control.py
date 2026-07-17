@@ -26,6 +26,16 @@ BOUNDARY_STATEMENT = (
     "settings, artifacts, tools, or persistence are connected to a real Hermes "
     "backend unless independently verified."
 )
+AUTHORITATIVE_PROJECT = {
+    "repository": "MerverliPy/hermes-webui",
+    "siteSlug": "hermes-agent-web-ui",
+    "siteProjectId": "appgprj_6a57ca3238c081919fcc5634802b2800",
+    "trackedVersion": 24,
+    "siteRevisionKey": "hermes-site-version-24-27b62e0a21a1",
+    "adapterPhase": "host-synchronized",
+    "lastSynchronizedAt": "2026-07-16T21:23:19.524Z",
+    "visualDirection": "graphite-and-cyan",
+}
 
 
 class ControlError(RuntimeError):
@@ -49,14 +59,7 @@ def validate_state(state: dict[str, Any]) -> None:
     project = state.get("project")
     if not isinstance(project, dict):
         raise ControlError("project must be an object")
-    expected_project = {
-        "repository": "MerverliPy/hermes-webui",
-        "siteSlug": "hermes-agent-web-ui",
-        "siteProjectId": "appgprj_6a57ca3238c081919fcc5634802b2800",
-        "trackedVersion": 22,
-        "visualDirection": "graphite-and-cyan",
-    }
-    for key, expected in expected_project.items():
+    for key, expected in AUTHORITATIVE_PROJECT.items():
         if project.get(key) != expected:
             raise ControlError(f"project.{key} must remain {expected!r}")
 

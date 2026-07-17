@@ -24,8 +24,8 @@ Generated: `2026-07-17T00:55:57.721601Z`
 | Control | Value | Status | Evidence |
 |---|---|---|---|
 | Repository | `MerverliPy/hermes-webui` | recorded | — |
-| Source revision | `0929062026f1d857a7e50b6356820d09c4bc67a2` | verified | git: git rev-parse HEAD |
-| Branch | `fix/project-control-version-24` | verified | git: git branch --show-current |
+| Generation source revision | `0929062026f1d857a7e50b6356820d09c4bc67a2` | verified | git: git rev-parse HEAD |
+| Generation branch | `fix/project-control-version-24` | verified | git: git branch --show-current |
 | Tracked project version | `Version 24` | verified | ChatGPT Sites host receipt: revision 24; revision key hermes-site-version-24-27b62e0a21a1 |
 | Site project | `appgprj_6a57ca3238c081919fcc5634802b2800` | verified | ChatGPT Sites host receipt: Hermes Agent Web UI; synchronized 2026-07-16T21:23:19.524Z |
 | Authoritative Site checkpoint | `Unresolved` | unresolved | — |

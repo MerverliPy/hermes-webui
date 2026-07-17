@@ -36,6 +36,10 @@ AUTHORITATIVE_PROJECT = {
     "lastSynchronizedAt": "2026-07-16T21:23:19.524Z",
     "visualDirection": "graphite-and-cyan",
 }
+PROVENANCE_LABELS = {
+    "sourceRevision": "Generation source revision",
+    "branch": "Generation branch",
+}
 
 
 class ControlError(RuntimeError):
@@ -74,6 +78,9 @@ def validate_state(state: dict[str, Any]) -> None:
         if not isinstance(row_id, str) or not row_id or row_id in ids:
             raise ControlError("status row IDs must be unique non-empty strings")
         ids.add(row_id)
+        expected_label = PROVENANCE_LABELS.get(row_id)
+        if expected_label is not None and row.get("label") != expected_label:
+            raise ControlError(f"{row_id} label must remain {expected_label!r}")
         status = row.get("status")
         evidence = row.get("evidence")
         if status not in ALLOWED_STATUSES:

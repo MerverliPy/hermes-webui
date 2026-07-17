@@ -25,7 +25,7 @@
     },
     {
       "id": "sourceRevision",
-      "label": "Source revision",
+      "label": "Generation source revision",
       "value": "0929062026f1d857a7e50b6356820d09c4bc67a2",
       "status": "verified",
       "evidence": [
@@ -37,7 +37,7 @@
     },
     {
       "id": "branch",
-      "label": "Branch",
+      "label": "Generation branch",
       "value": "fix/project-control-version-24",
       "status": "verified",
       "evidence": [

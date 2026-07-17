@@ -52,6 +52,18 @@ def test_exactly_ten_status_rows(state):
     assert len(state["statusRows"]) == 10
 
 
+def test_generation_provenance_labels_are_pinned(state):
+    rows = {row["id"]: row for row in state["statusRows"]}
+    assert rows["sourceRevision"]["label"] == "Generation source revision"
+    assert rows["branch"]["label"] == "Generation branch"
+
+    changed = copy.deepcopy(state)
+    changed_rows = {row["id"]: row for row in changed["statusRows"]}
+    changed_rows["sourceRevision"]["label"] = "Source revision"
+    with pytest.raises(project_control.ControlError, match="sourceRevision label"):
+        project_control.validate_state(changed)
+
+
 def test_verified_status_requires_evidence(state):
     changed = copy.deepcopy(state)
     row = changed["statusRows"][0]

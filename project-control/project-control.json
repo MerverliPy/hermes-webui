@@ -1,12 +1,12 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-17T00:55:57.721601Z",
+  "generatedAt": "2026-07-17T01:40:10.805990Z",
   "project": {
     "repository": "MerverliPy/hermes-webui",
     "siteSlug": "hermes-agent-web-ui",
     "siteProjectId": "appgprj_6a57ca3238c081919fcc5634802b2800",
-    "trackedVersion": 24,
-    "siteRevisionKey": "hermes-site-version-24-27b62e0a21a1",
+    "trackedVersion": 25,
+    "siteRevisionKey": "hermes-site-version-25-905ac4e9d18b",
     "adapterPhase": "host-synchronized",
     "lastSynchronizedAt": "2026-07-16T21:23:19.524Z",
     "visualDirection": "graphite-and-cyan",
@@ -26,7 +26,7 @@
     {
       "id": "sourceRevision",
       "label": "Generation source revision",
-      "value": "0929062026f1d857a7e50b6356820d09c4bc67a2",
+      "value": "84682b4a1f7b56084174724de62f0897eaf532bb",
       "status": "verified",
       "evidence": [
         {
@@ -50,12 +50,12 @@
     {
       "id": "projectVersion",
       "label": "Tracked project version",
-      "value": "Version 24",
+      "value": "Version 25",
       "status": "verified",
       "evidence": [
         {
           "source": "ChatGPT Sites host receipt",
-          "detail": "revision 24; revision key hermes-site-version-24-27b62e0a21a1"
+          "detail": "revision 25; revision key hermes-site-version-25-905ac4e9d18b"
         }
       ]
     },

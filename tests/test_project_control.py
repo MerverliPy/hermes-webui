@@ -34,16 +34,17 @@ def test_schema_declares_draft_2020_12():
     assert schema["$schema"] == "https://json-schema.org/draft/2020-12/schema"
 
 
-def test_authoritative_version_24_receipt_is_pinned(state):
-    assert state["project"]["trackedVersion"] == 24
-    assert state["project"]["siteRevisionKey"] == "hermes-site-version-24-27b62e0a21a1"
+def test_authoritative_version_25_receipt_is_pinned(state):
+    assert state["project"]["trackedVersion"] == 25
+    assert state["project"]["siteRevisionKey"] == "hermes-site-version-25-905ac4e9d18b"
     assert state["project"]["adapterPhase"] == "host-synchronized"
     assert state["project"]["lastSynchronizedAt"] == "2026-07-16T21:23:19.524Z"
 
 
-def test_historical_version_22_is_rejected(state):
+@pytest.mark.parametrize("historical_version", [22, 24])
+def test_historical_versions_are_rejected(state, historical_version):
     changed = copy.deepcopy(state)
-    changed["project"]["trackedVersion"] = 22
+    changed["project"]["trackedVersion"] = historical_version
     with pytest.raises(project_control.ControlError, match="trackedVersion"):
         project_control.validate_state(changed)
 

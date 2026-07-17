@@ -8,8 +8,8 @@ and protected boundaries outside the marked region remain human-maintained.
 
 - Site slug: `hermes-agent-web-ui`
 - Site project ID: `appgprj_6a57ca3238c081919fcc5634802b2800`
-- Tracked milestone: Version 24
-- Revision key: `hermes-site-version-24-27b62e0a21a1`
+- Tracked milestone: Version 25
+- Revision key: `hermes-site-version-25-905ac4e9d18b`
 - Adapter phase: `host-synchronized`
 - Last synchronized: `2026-07-16T21:23:19.524Z`
 - Visual direction: graphite-and-cyan
@@ -19,14 +19,14 @@ and protected boundaries outside the marked region remain human-maintained.
 ## Current control status
 
 <!-- BEGIN GENERATED PROJECT CONTROL STATUS -->
-Generated: `2026-07-17T00:55:57.721601Z`
+Generated: `2026-07-17T01:40:10.805990Z`
 
 | Control | Value | Status | Evidence |
 |---|---|---|---|
 | Repository | `MerverliPy/hermes-webui` | recorded | — |
-| Generation source revision | `0929062026f1d857a7e50b6356820d09c4bc67a2` | verified | git: git rev-parse HEAD |
+| Generation source revision | `84682b4a1f7b56084174724de62f0897eaf532bb` | verified | git: git rev-parse HEAD |
 | Generation branch | `fix/project-control-version-24` | verified | git: git branch --show-current |
-| Tracked project version | `Version 24` | verified | ChatGPT Sites host receipt: revision 24; revision key hermes-site-version-24-27b62e0a21a1 |
+| Tracked project version | `Version 25` | verified | ChatGPT Sites host receipt: revision 25; revision key hermes-site-version-25-905ac4e9d18b |
 | Site project | `appgprj_6a57ca3238c081919fcc5634802b2800` | verified | ChatGPT Sites host receipt: Hermes Agent Web UI; synchronized 2026-07-16T21:23:19.524Z |
 | Authoritative Site checkpoint | `Unresolved` | unresolved | — |
 | Authoritative Site deployment | `Unresolved` | unresolved | — |
@@ -37,7 +37,7 @@ Generated: `2026-07-17T00:55:57.721601Z`
 
 ## Protected authority boundary
 
-The Version 24 identity and revision receipt are synchronized by the ChatGPT
+The Version 25 identity and revision receipt are synchronized by the ChatGPT
 host. Website Control Studio has no direct Sites API or credentials, and
 production publishing is unavailable through the Studio.
 
